@@ -26,9 +26,10 @@ class PrintAction {
     return [];
   }
 
-  Future<List<int>> image(Image image, {bool isFlip = false}) async {
+  Future<List<int>> image(Image image,
+      {bool isFlip = false, double colorThreshold = 0.8}) async {
     if (model.type == PrinterType.label) {
-      return _imageLabel(image, isFlip: isFlip);
+      return _imageLabel(image, isFlip, colorThreshold);
     } else if (model.type == PrinterType.pos) {
       return _imagePos(image);
     }
@@ -58,7 +59,8 @@ class PrintAction {
     return bytes;
   }
 
-  Future<List<int>> _imageLabel(Image image, {bool isFlip = false}) async {
+  Future<List<int>> _imageLabel(
+      Image image, bool isFlip, double colorThreshold) async {
     if (model.direction == Direction.landscape) {
       image = copyRotate(image, 90);
     }
@@ -95,7 +97,7 @@ class PrintAction {
           int newColor = 1;
           if ((0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) /
                   255 <
-              0.8) {
+              colorThreshold) {
             newColor = 0;
           }
           bit = (bit << 1) ^ newColor;
