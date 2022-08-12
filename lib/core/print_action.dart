@@ -26,9 +26,9 @@ class PrintAction {
     return [];
   }
 
-  Future<List<int>> image(Image image) async {
+  Future<List<int>> image(Image image, {bool isFlip = false}) async {
     if (model.type == PrinterType.label) {
-      return _imageLabel(image);
+      return _imageLabel(image, isFlip: isFlip);
     } else if (model.type == PrinterType.pos) {
       return _imagePos(image);
     }
