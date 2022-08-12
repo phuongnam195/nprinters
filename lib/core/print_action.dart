@@ -58,7 +58,7 @@ class PrintAction {
     return bytes;
   }
 
-  Future<List<int>> _imageLabel(Image image) async {
+  Future<List<int>> _imageLabel(Image image, {bool isFlip = false}) async {
     if (model.direction == Direction.landscape) {
       image = copyRotate(image, 90);
     }
@@ -77,7 +77,9 @@ class PrintAction {
     int fullHeight = (image.height * fullWidth) ~/ image.width;
     image = copyResize(image, width: fullWidth, height: fullHeight);
 
-    flip(image, Flip.horizontal);
+    if (isFlip) {
+      flip(image, Flip.horizontal);
+    }
 
     List<int> bitmap = [];
 
