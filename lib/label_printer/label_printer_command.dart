@@ -71,7 +71,7 @@ class LabelPrinterCommand {
   /// This command defines the label width and length
   /// [m] Label width (mm)
   /// [n] Label length (mm)
-  static List<int> size(int m, int n) {
+  static List<int> size(double m, double n) {
     String command =
         'SIZE $m' + (m > 0 ? ' mm' : '') + ',$n' + (n > 0 ? ' mm' : '') + '\n';
     Logger.command(command);
@@ -79,7 +79,7 @@ class LabelPrinterCommand {
   }
 
   /// This command sets the distance between two labels
-  static List<int> gap(int m, int n) {
+  static List<int> gap(double m, double n) {
     String command =
         'GAP $m' + (m > 0 ? ' mm' : '') + ',$n' + (n > 0 ? ' mm' : '') + '\n';
     Logger.command(command);

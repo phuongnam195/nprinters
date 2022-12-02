@@ -1,9 +1,9 @@
 class LabelSize {
   /// Label width (mm)
-  int width;
+  double width;
 
   /// Label length (mm)
-  int length;
+  double length;
 
   LabelSize(this.width, this.length);
 

@@ -73,7 +73,7 @@ class PrintAction {
     bytes += LabelPrinterCommand.cls();
     bytes += LabelPrinterCommand.direction(1);
 
-    int labelWidth = model.size.width * model.resolution.dpmm;
+    double labelWidth = model.size.width * model.resolution.dpmm;
 
     int fullWidth = (labelWidth ~/ 8) * 8;
     int fullHeight = (image.height * fullWidth) ~/ image.width;

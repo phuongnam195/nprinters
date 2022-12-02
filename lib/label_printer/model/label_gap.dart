@@ -1,9 +1,9 @@
 class LabelGap {
   /// The gap distance between two labels 0 ≤ m ≤ 25.4 (mm)
-  int m;
+  double m;
 
   /// The offset distance of the gap n ≤ label length (mm)
-  int n;
+  double n;
 
   LabelGap(this.m, [this.n = 0]);
 
