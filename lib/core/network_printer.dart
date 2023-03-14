@@ -33,6 +33,7 @@ class NetworkPrinter {
         await connect();
       }
       _socket.add(data);
+      await _socket.flush();
       if (isDisconnect) {
         await disconnect();
       }
