@@ -26,8 +26,7 @@ class PrintAction {
     return [];
   }
 
-  Future<List<int>> image(Image image,
-      {bool isFlip = false, double colorThreshold = 0.8}) async {
+  Future<List<int>> image(Image image, {bool isFlip = false, double colorThreshold = 0.8}) async {
     if (model.type == PrinterType.label) {
       return _imageLabel(image, isFlip, colorThreshold);
     } else if (model.type == PrinterType.pos) {
@@ -43,7 +42,7 @@ class PrintAction {
     bytes += LabelPrinterCommand.size(model.size.width, model.size.length);
     bytes += LabelPrinterCommand.gap(model.gap.m, model.gap.n);
     bytes += LabelPrinterCommand.cls();
-    bytes += LabelPrinterCommand.text(10, 10, '3', 0, 1, 1, text);
+    bytes += LabelPrinterCommand.text(10, 10, content: text);
     bytes += LabelPrinterCommand.print(1, 1);
     Logger.line();
     return bytes;
@@ -59,18 +58,17 @@ class PrintAction {
     return bytes;
   }
 
-  Future<List<int>> _imageLabel(
-      Image image, bool isFlip, double colorThreshold) async {
+  Future<List<int>> _imageLabel(Image image, bool isFlip, double colorThreshold) async {
     if (model.direction == Direction.landscape) {
       image = copyRotate(image, 90);
     }
     Logger.line();
-    Logger.out(
-        'Print IMAGE (${image.width} x ${image.height}) with label printer');
+    Logger.out('Print IMAGE (${image.width} x ${image.height}) with label printer');
     List<int> bytes = [];
+    bytes += LabelPrinterCommand.cls();
+    bytes += LabelPrinterCommand.speed(5);
     bytes += LabelPrinterCommand.size(model.size.width, model.size.length);
     bytes += LabelPrinterCommand.gap(model.gap.m, model.gap.n);
-    bytes += LabelPrinterCommand.cls();
     bytes += LabelPrinterCommand.direction(1);
 
     double labelWidth = model.size.width * model.resolution.dpmm;
@@ -95,9 +93,7 @@ class PrintAction {
           final color = ui.Color(pixel);
 
           int newColor = 1;
-          if ((0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) /
-                  255 <
-              colorThreshold) {
+          if ((0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255 < colorThreshold) {
             newColor = 0;
           }
           bit = (bit << 1) ^ newColor;
@@ -109,10 +105,9 @@ class PrintAction {
     bytes += LabelPrinterCommand.bitmap(
       0,
       0,
-      dotsToBytes(image.width),
-      image.height,
-      0,
-      bitmap,
+      width: dotsToBytes(image.width),
+      height: image.height,
+      bitmap: bitmap,
     );
 
     bytes += LabelPrinterCommand.print(1);
