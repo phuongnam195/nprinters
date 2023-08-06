@@ -117,6 +117,10 @@ class PrintAction {
   }
 
   Future<List<int>> _imagePos(Image image) async {
+    int width = model.paperSize.width;
+    int height = width * image.height ~/ image.width;
+    image = copyResize(image, width: width, height: height);
+
     final profile = await CapabilityProfile.load(name: model.profile);
     final generator = Generator(model.paperSize, profile);
     List<int> bytes = [];
