@@ -66,7 +66,7 @@ class PrintAction {
     Logger.out('Print IMAGE (${image.width} x ${image.height}) with label printer');
     List<int> bytes = [];
     bytes += LabelPrinterCommand.cls();
-    bytes += LabelPrinterCommand.speed(5);
+    bytes += LabelPrinterCommand.speed(6);
     bytes += LabelPrinterCommand.size(model.size.width, model.size.length);
     bytes += LabelPrinterCommand.gap(model.gap.m, model.gap.n);
     bytes += LabelPrinterCommand.direction(1);
