@@ -44,8 +44,8 @@ class NetworkPrinter {
   }
 
   Future<PrintResult> disconnect({Duration timeout}) async {
-    await _socket.flush();
-    await _socket.close();
+    await _socket?.flush();
+    await _socket?.close();
     _isConnected = false;
     if (timeout != null) {
       await Future.delayed(timeout, () => null);

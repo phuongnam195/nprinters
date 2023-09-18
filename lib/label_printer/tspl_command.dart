@@ -1,12 +1,14 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 
+import 'package:image/image.dart';
 import 'package:flutter/foundation.dart';
 
 import '../utils/logger.dart';
 import '../utils/utils.dart';
 
-class LabelPrinterCommand {
-  LabelPrinterCommand._();
+class TsplCommand {
+  TsplCommand._();
 
   static List<int> print(int m, [int n = 1]) {
     String command = 'PRINT $m,$n\n';
@@ -86,6 +88,56 @@ class LabelPrinterCommand {
     return bytes;
   }
 
+  static List<int> image(
+    int x,
+    int y, {
+    int width,
+    int height,
+    @required Image image,
+    int rotation = 0,
+  }) {
+    if (rotation != 0) {
+      image = copyRotate(image, rotation, interpolation: Interpolation.linear);
+    }
+
+    int expectWidth = width ?? image.width;
+    int expectHeight = height ?? image.height;
+
+    int actualWidth = (expectWidth ~/ 8) * 8;
+    int actualHeight = (expectHeight * actualWidth) ~/ expectWidth;
+
+    image = copyResize(image, width: actualWidth, height: actualHeight);
+
+    List<int> bitmap = [];
+
+    for (int i = 0; i < image.height; i++) {
+      for (int j = 0; j < dotsToBytes(image.width); j++) {
+        int bit = 0;
+        for (int k = 0; k < 8; k++) {
+          int x = j * 8 + k;
+          int y = i;
+          int pixel = image.getPixel(x, y);
+          final color = ui.Color(pixel);
+
+          int newColor = 1;
+          if ((0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255 < 0.4) {
+            newColor = 0;
+          }
+          bit = (bit << 1) ^ newColor;
+        }
+        bitmap.add(bit);
+      }
+    }
+
+    return TsplCommand.bitmap(
+      x,
+      y,
+      width: dotsToBytes(image.width),
+      height: image.height,
+      bitmap: bitmap,
+    );
+  }
+
   /// This command prints text on label
   /// [x] The x-coordinate of the text
   /// [y] The y-coordinate of the text
@@ -95,8 +147,8 @@ class LabelPrinterCommand {
   /// [yMul] Vertical multiplication, up to 10x
   /// [content] Content to print, put in quotation marks
   static List<int> text(
-    int x,
-    int y, {
+    dynamic x,
+    dynamic y, {
     String font = '3',
     int rotation = 0,
     int xMul = 1,
@@ -104,6 +156,39 @@ class LabelPrinterCommand {
     @required String content,
   }) {
     String command = 'TEXT $x,$y,"$font",$rotation,$xMul,$yMul,"$content"\n';
+    Logger.command(command);
+    return command.toBytes();
+  }
+
+  /// This command prints paragraph on label
+  /// [x] The x-coordinate of the text
+  /// [y] The y-coordinate of the text
+  /// [width] The width of block for the paragraph in dots
+  /// [height] The height of block for the paragraph in dots
+  /// [font] Font name
+  /// [rotation] The rotation angle of text: 0, 90, 180, 270
+  /// [xMul] Horizontal multiplication, up to 10x
+  /// [yMul] Vertical multiplication, up to 10x
+  /// [space] Add or delete the space between lines (in dots)
+  /// [align] 0: default (left), 1: left, 2: center, 3: right
+  /// [fit] 0: default (no shrink), 1: shrink
+  /// [content] Data in block. The maximum data length is 4092 bytes.
+  static List<int> block(
+    dynamic x,
+    dynamic y, {
+    @required dynamic width,
+    @required dynamic height,
+    String font = '3',
+    int rotation = 0,
+    int xMul = 1,
+    int yMul = 1,
+    int space,
+    int align = 0,
+    int fit = 0,
+    @required String content,
+  }) {
+    String command =
+        'BLOCK $x,$y,$width,$height,"$font",$rotation,$xMul,$yMul,${space != null ? '$space,' : ''}${align != null ? '$align,' : ''}${fit != null ? '$fit,' : ''}"$content"\n';
     Logger.command(command);
     return command.toBytes();
   }
@@ -129,7 +214,7 @@ class LabelPrinterCommand {
     String mask = 'S7',
     @required String content,
   }) {
-    String command = 'QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,${model == 'M2' ? 'M2,' : ''},"$content"\n';
+    String command = 'QRCODE $x,$y,$eccLevel,$cellWidth,$mode,$rotation,${model == 'M2' ? 'M2,' : ''}"$content"\n';
     Logger.command(command);
     return command.toBytes();
   }
@@ -203,6 +288,42 @@ class LabelPrinterCommand {
   /// [n] Name or number of code page, which can be divided into 7-bit code page and 8-bit code page
   static List<int> codePage([String n = 'UTF-8']) {
     String command = 'CODEPAGE $n\n';
+    Logger.command(command);
+    return command.toBytes();
+  }
+
+  /// Returns the width of barcode in dot
+  /// [variableName] Variable name 
+  /// [content]  Barcode content
+  /// [codeType] Barcode type
+  /// [name] Barcode type
+  /// [narrow] The width of narrow bar
+  /// [wide] The width of wide bar
+  static List<int> barcodePixel({
+    @required String variableName,
+    @required String content,
+    @required String codeType,
+    @required int narrow,
+    @required int wide,
+  }) {
+    String command = '$variableName=BARCODEPIXEL("$content","$codeType",$narrow,$wide)\n';
+    Logger.command(command);
+    return command.toBytes();
+  }
+
+  /// Download a program file or a data file
+  /// [fileName] File name
+  /// [n] Optional. F: to main board flash memory, E: to expansion memory module
+  /// [dataSize] For data file. The size of data to download
+  /// [dataContent] For data file. The content of data to download
+  static List<int> download(String fileName, {String n, int dataSize, List<int> dataContent}) {
+    String command = 'DOWNLOAD ${n != null ? '$n,' : ''}"$fileName"';
+    if (dataSize != null && dataContent != null) {
+      command += ',$dataSize,';
+      List<int> bytes = command.toBytes() + dataContent;
+      Logger.command(command + '[${dataContent[0]},${dataContent[1]},...${dataContent[dataContent.length - 1]}]');
+      return bytes;
+    }
     Logger.command(command);
     return command.toBytes();
   }

@@ -4,7 +4,7 @@ import 'package:flutter_esc_pos_utils/flutter_esc_pos_utils.dart';
 import 'package:image/image.dart';
 
 import 'printer_model.dart';
-import '../label_printer/label_printer_command.dart';
+import '../label_printer/tspl_command.dart';
 import '../label_printer/model/direction.dart';
 import '../utils/logger.dart';
 import '../utils/utils.dart';
@@ -39,11 +39,11 @@ class PrintAction {
     Logger.line();
     Logger.out('Print TEXT with label printer');
     List<int> bytes = [];
-    bytes += LabelPrinterCommand.size(model.size.width, model.size.length);
-    bytes += LabelPrinterCommand.gap(model.gap.m, model.gap.n);
-    bytes += LabelPrinterCommand.cls();
-    bytes += LabelPrinterCommand.text(10, 10, content: text);
-    bytes += LabelPrinterCommand.print(1, 1);
+    bytes += TsplCommand.size(model.size.width, model.size.length);
+    bytes += TsplCommand.gap(model.gap.m, model.gap.n);
+    bytes += TsplCommand.cls();
+    bytes += TsplCommand.text(10, 10, content: text);
+    bytes += TsplCommand.print(1, 1);
     Logger.line();
     return bytes;
   }
@@ -65,11 +65,11 @@ class PrintAction {
     Logger.line();
     Logger.out('Print IMAGE (${image.width} x ${image.height}) with label printer');
     List<int> bytes = [];
-    bytes += LabelPrinterCommand.cls();
-    bytes += LabelPrinterCommand.speed(6);
-    bytes += LabelPrinterCommand.size(model.size.width, model.size.length);
-    bytes += LabelPrinterCommand.gap(model.gap.m, model.gap.n);
-    bytes += LabelPrinterCommand.direction(1);
+    bytes += TsplCommand.cls();
+    bytes += TsplCommand.speed(6);
+    bytes += TsplCommand.size(model.size.width, model.size.length);
+    bytes += TsplCommand.gap(model.gap.m, model.gap.n);
+    bytes += TsplCommand.direction(1);
 
     double labelWidth = model.size.width * model.resolution.dpmm;
 
@@ -102,7 +102,7 @@ class PrintAction {
       }
     }
 
-    bytes += LabelPrinterCommand.bitmap(
+    bytes += TsplCommand.bitmap(
       0,
       0,
       width: dotsToBytes(image.width),
@@ -110,7 +110,7 @@ class PrintAction {
       bitmap: bitmap,
     );
 
-    bytes += LabelPrinterCommand.print(1);
+    bytes += TsplCommand.print(1);
 
     Logger.line();
     return bytes;
