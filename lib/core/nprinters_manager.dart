@@ -20,10 +20,14 @@ class NPrintersManager {
   Future<List<PrinterModel>> loadAllPrinters() async {
     final prefs = await SharedPreferences.getInstance();
     try {
-      List<String> jsons = prefs.getStringList(keyList);
+      List<String> jsonStrings = prefs.getStringList(keyList);
       printers.clear();
-      for (var json in jsons) {
-        PrinterModel printer = PrinterModel.fromJson(jsonDecode(json));
+      for (var jsonStr in jsonStrings) {
+        final json = jsonDecode(jsonStr);
+        if (json['id'] == null) {
+          continue;
+        }
+        PrinterModel printer = PrinterModel.fromJson(json);
         printers.add(printer);
       }
       return printers;
@@ -40,7 +44,12 @@ class NPrintersManager {
   }
 
   Future<void> addPrinter(PrinterModel printer) async {
-    printers.add(printer);
+    int i = printers.indexWhere((e) => e.id == printer.id);
+    if (i >= 0) {
+      printers[i] = printer;
+    } else {
+      printers.add(printer);
+    }
     await saveAllPrinters();
   }
 

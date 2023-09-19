@@ -12,6 +12,8 @@ enum PrinterType {
 }
 
 class PrinterModel {
+  int id;
+
   PrinterType type;
   String name;
   String host;
@@ -26,6 +28,7 @@ class PrinterModel {
   String profile;
 
   PrinterModel.label({
+    @required this.id,
     @required this.name,
     @required this.host,
     this.port = 9100,
@@ -36,6 +39,7 @@ class PrinterModel {
   }) : type = PrinterType.label;
 
   PrinterModel.pos({
+    @required this.id,
     @required this.name,
     @required this.host,
     this.port = 9100,
@@ -44,6 +48,7 @@ class PrinterModel {
   }) : type = PrinterType.pos;
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'type': type.index,
         'name': name,
         'host': host,
@@ -59,6 +64,7 @@ class PrinterModel {
   factory PrinterModel.fromJson(Map<String, dynamic> json) {
     if (json['type'] == PrinterType.label.index) {
       return PrinterModel.label(
+        id: json['id'],
         name: json['name'],
         host: json['host'],
         port: json['port'],
@@ -81,6 +87,7 @@ class PrinterModel {
       }
 
       return PrinterModel.pos(
+        id: json['id'],
         name: json['name'],
         host: json['host'],
         port: json['port'],
